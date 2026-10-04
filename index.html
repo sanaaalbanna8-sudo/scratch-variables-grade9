@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>المتغيرات البرمجية في سكراتش | بيسان طارق البعم | الصف التاسع</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink: #172033; --muted: #52637a; --paper: #efe8dc; --card: #fffdf9;
+    --navy: #12243c; --orange: #ff8c1a; --orange-d: #db6e00;
+    --green: #59c059; --green-d: #389438; --yellow: #ffbf00; --yellow-d: #c99000;
+    --control: #ffab19; --blue: #4c97ff; --purple: #9966ff; --pink: #cf63cf;
+    --ok: #0f7a3a; --ok-bg: #e5f8ec; --bad: #9f1239; --bad-bg: #ffe4e6;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    font-family: "Cairo", "Segoe UI", Tahoma, Arial, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(800px 360px at 100% 0%, #ffd7b0 0%, transparent 50%),
+      radial-gradient(700px 320px at 0% 100%, #d5e4ff 0%, transparent 46%),
+      var(--paper);
+  }
+  button, input { font-family: inherit; }
+  button { cursor: pointer; }
+  :focus-visible { outline: 3px solid #1d4e89; outline-offset: 2px; }
+  .sr { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); }
+  header, footer {
+    position: fixed; left: 0; right: 0; z-index: 30; height: 54px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; background: var(--navy); color: #fff;
+  }
+  header { top: 0; height: 54px; }
+  footer { bottom: 0; height: 70px; }
+  .brand { display: flex; align-items: center; gap: 8px; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+    font-weight: 900; background: linear-gradient(180deg, #ffb15e, var(--orange));
+    box-shadow: 0 3px 0 var(--orange-d);
+  }
+  .brand b { display: block; font-size: 13px; line-height: 1.15; }
+  .brand span, #crumb { color: #ffd7ad; font-weight: 700; font-size: 12px; }
+  #crumb { font-size: 14px; color: #fff; font-weight: 800; }
+  .prog { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 13px; }
+  .prog i { width: 72px; height: 8px; border-radius: 99px; background: rgba(255,255,255,.16); overflow: hidden; display: block; }
+  .prog i b { display: block; height: 100%; width: 0; background: var(--orange); }
+  .icon-btn, .nav-btn {
+    border: 0; color: #fff; background: rgba(255,255,255,.12);
+    border-radius: 999px; font-weight: 800; padding: 7px 14px;
+  }
+  .nav-btn:disabled { opacity: .35; cursor: default; }
+  .stack {
+    position: fixed; top: 66px; bottom: 80px; left: 22px; right: 22px;
+    border-radius: 22px; background: #fff6ec;
+    box-shadow: 10px 10px 0 #ffd3ad, 18px 18px 0 #f3c49a;
+  }
+  .slide {
+    display: none; position: fixed; z-index: 2;
+    top: 62px; bottom: 76px; left: 14px; right: 14px;
+    background: var(--card); border-radius: 22px;
+    box-shadow: 0 18px 50px rgba(18,36,60,.14);
+    padding: 16px 22px 12px; overflow: hidden;
+  }
+  .slide.active { display: block; animation: turn .28s ease; }
+  @keyframes turn { from { opacity: .35; transform: translateX(-22px); } to { opacity: 1; transform: none; } }
+  .wrap { height: 100%; max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+  .kicker {
+    display: inline-flex; align-self: flex-start; background: #fff3e6; color: #b45309;
+    border-radius: 999px; padding: 2px 10px; font-weight: 800; font-size: 12px; margin-bottom: 4px;
+  }
+  h1 { font-size: clamp(1.25rem, 2vw, 1.7rem); line-height: 1.25; margin: 0 0 6px; }
+  h2 { font-size: 1rem; margin: 0 0 6px; }
+  .lead { margin: 0 0 8px; color: var(--muted); font-weight: 700; line-height: 1.45; }
+  .fill { flex: 1; min-height: 0; }
+  .split { display: grid; grid-template-columns: 1.05fr .95fr; gap: 12px; height: 100%; min-height: 0; }
+  .split.even { grid-template-columns: 1fr 1fr; }
+  .card { background: #fff; border: 1px solid #f0e6d8; border-radius: 14px; padding: 10px 12px; min-height: 0; }
+  .note, .tip { border-radius: 10px; padding: 7px 9px; font-weight: 700; font-size: .88rem; margin: 6px 0 0; }
+  .note { background: #f3f8ff; color: #1e3a5f; }
+  .tip { background: #fff8eb; border-inline-start: 4px solid var(--orange); }
+  .en { font-family: "Segoe UI", Tahoma, sans-serif; color: #6d7f96; font-weight: 700; font-size: .82em; }
+  .grid { display: grid; gap: 8px; }
+  .types { grid-template-columns: repeat(3, 1fr); }
+  .outcomes { grid-template-columns: 1fr 1fr; }
+  .compare, .rules { grid-template-columns: 1fr 1fr; }
+  .names { grid-template-columns: repeat(4, 1fr); }
+  .name-ex { background: #fff; border: 1px solid #efe4d6; border-radius: 12px; padding: 8px; font-weight: 800; }
+  .name-ex b { display: block; color: #c2410c; }
+  .name-ex span { display: block; color: var(--muted); font-size: .78rem; font-weight: 700; }
+  .foot-center { text-align: center; line-height: 1.2; }
+  .copy { color: #ffd7ad; font-size: 12px; font-weight: 700; margin-top: 2px; }
+  .steps { grid-template-columns: repeat(5, 1fr); }
+  .kids { grid-template-columns: repeat(3, 1fr); }
+  .sdlc { grid-template-columns: repeat(6, 1fr); }
+  .roles { grid-template-columns: repeat(4, 1fr); }
+  .type, .rule, .cmp, .step, .role, .kid, .sdlc div {
+    background: #fff; border: 1px solid #efe4d6; border-radius: 12px; padding: 8px; font-weight: 800;
+  }
+  .type b, .cmp b, .role b { display: block; }
+  .type b .en { display: inline; color: #1554b0; font-size: .92em; margin-inline-start: .35em; }
+  .type span, .cmp span, .role span, .oc small, .kid span, .sdlc span { display: block; color: var(--muted); font-weight: 700; font-size: .78rem; }
+  .type.int { box-shadow: inset 4px 0 0 var(--blue); }
+  .type.str { box-shadow: inset 4px 0 0 var(--purple); }
+  .type.bool { box-shadow: inset 4px 0 0 var(--green); }
+  .cmp.local { box-shadow: inset 0 4px 0 var(--blue); }
+  .cmp.global { box-shadow: inset 0 4px 0 var(--orange); }
+  .oc, .end-list button {
+    width: 100%; text-align: right; border: 1px solid #efe4d6; background: #fff;
+    border-radius: 12px; padding: 8px; font-weight: 800; display: grid;
+    grid-template-columns: auto 1fr; gap: 8px; align-items: center;
+  }
+  .n, .step b {
+    width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
+    background: #fff3e6; color: #c2410c; font-weight: 900;
+  }
+  .oc.done .n, .end-list button.done { background: var(--ok-bg); }
+  .oc.done .n { background: var(--ok); color: #fff; }
+  .step { font-size: .82rem; }
+  .step b { margin-bottom: 4px; background: var(--navy); color: #fff; border-radius: 50%; }
+  .memory, .row, .two { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .memory { justify-content: space-between; background: #fff7ef; border: 1px solid #ffd7b0; border-radius: 14px; padding: 10px; }
+  .mem-btns button, .ghost, .retry, .q button, .order-list button {
+    border: 1px solid #ecdcc8; background: #fff; border-radius: 999px; padding: 5px 11px; font-weight: 800; color: var(--ink);
+  }
+  .monitor {
+    background: var(--orange); color: #fff; border-radius: 8px; padding: 3px 6px 5px;
+    min-width: 78px; text-align: center; box-shadow: 0 3px 0 var(--orange-d);
+  }
+  .monitor em { display: block; font-style: normal; font-size: 11px; font-weight: 800; }
+  .monitor strong { display: block; background: #fff; color: #111; border-radius: 4px; margin-top: 2px; font-size: 20px; }
+  .monitor.pop strong { animation: pop .35s ease; }
+  @keyframes pop { 40% { transform: scale(1.15); } }
+  .script { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
+  .blk {
+    --c: var(--orange); --s: var(--orange-d);
+    background: var(--c); color: #fff; font-weight: 800; border-radius: 5px;
+    box-shadow: 0 3px 0 var(--s); padding: 6px 9px; display: flex; flex-wrap: wrap;
+    align-items: center; gap: 6px; line-height: 1.3;
+  }
+  .blk.hat { --c: var(--yellow); --s: var(--yellow-d); border-radius: 12px 12px 5px 5px; }
+  .blk.op { --c: var(--green); --s: var(--green-d); }
+  .blk.ctl { --c: var(--control); --s: #cf8b17; }
+  .blk.looks { --c: var(--purple); --s: #774dcc; }
+  .blk.flash { animation: flash .45s ease; }
+  @keyframes flash { 40% { filter: brightness(1.25); } }
+  .rep { background: rgba(0,0,0,.12); border-radius: 999px; padding: 0 8px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.28); }
+  .slot { background: #fff; color: #111; border-radius: 999px; min-width: 1.4em; text-align: center; padding: 0 8px; }
+  .hex {
+    background: var(--green); color: #fff; font-weight: 800; padding: 4px 14px; display: inline-block;
+    clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 10px 100%, 0 50%);
+  }
+  .flag { width: 16px; height: 16px; }
+  .scratch-app {
+    flex: 0 0 auto; width: max-content; max-width: 100%; margin-inline: auto;
+    display: grid; grid-template-columns: 128px minmax(250px, 420px) 250px;
+    justify-content: center; align-items: start; gap: 10px;
+    background: #e7eef9; border-radius: 14px; padding: 10px;
+  }
+  .cats { display: flex; flex-direction: column; gap: 4px; }
+  .cat { color: #fff; font-weight: 800; font-size: 12px; border-radius: 8px; padding: 6px 8px; }
+  .cat.motion { background: var(--blue); } .cat.looks { background: var(--purple); }
+  .cat.sound { background: var(--pink); } .cat.ctrl { background: var(--control); color: #3a2a00; }
+  .cat.var { background: var(--orange); outline: 2px solid #fff; }
+  .stage-box { background: #fff; border-radius: 12px; padding: 8px; }
+  .pitch {
+    position: relative; height: 132px; border-radius: 10px; overflow: hidden; border: 3px solid #f4f7fb;
+    background: linear-gradient(#2f9e4f, #2f9e4f) center / 100% 8px no-repeat,
+      repeating-linear-gradient(90deg, #238a43 0 26px, #1f7d3c 26px 52px);
+  }
+  .goalpost { position: absolute; left: 8px; top: 24px; width: 16px; height: 84px; border: 3px solid #fff; border-right: 0; }
+  .ball {
+    position: absolute; width: 20px; height: 20px; border-radius: 50%; top: 56px; right: 28px;
+    background: radial-gradient(circle at 35% 35%, #fff, #ccc);
+    transition: left .4s ease, right .4s ease;
+  }
+  .pitch.scored .ball { right: auto; left: 26px; }
+  .checkline { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: .88rem; }
+  .q {
+    display: flex; flex-wrap: wrap; gap: 5px; align-items: center;
+    background: #fff; border: 1px solid #efe4d6; border-radius: 11px; padding: 5px 7px; margin-bottom: 5px;
+  }
+  .q p { flex: 1 1 160px; margin: 0; font-weight: 800; font-size: .9rem; }
+  .quiz.compact .q { margin-bottom: 4px; padding: 4px 6px; }
+  .quiz.compact .q p { font-size: .84rem; }
+  .why { flex: 1 0 100%; display: none; color: var(--ok); font-weight: 700; font-size: .78rem; }
+  .q.good { background: var(--ok-bg); border-color: #b7ebc9; }
+  .q.good .why { display: block; }
+  .q.bad, .order.bad { animation: shake .35s linear; }
+  @keyframes shake { 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
+  button.picked { background: var(--ok-bg) !important; border-color: #8ed7a8 !important; color: var(--ok) !important; }
+  button.wrong { background: var(--bad-bg) !important; color: var(--bad) !important; }
+  .win { background: var(--ok-bg); color: var(--ok); border-radius: 10px; padding: 6px 8px; font-weight: 800; margin: 4px 0 0; }
+  .order-list { display: grid; gap: 5px; }
+  .order-list button { border-radius: 11px; text-align: right; display: flex; gap: 8px; align-items: center; width: 100%; }
+  .order-list button small { display: block; color: var(--muted); font-weight: 700; }
+  .order-list button.picked::before {
+    content: attr(data-n); width: 1.4rem; height: 1.4rem; border-radius: 50%;
+    background: var(--ok); color: #fff; display: grid; place-items: center; font-size: 12px; flex: 0 0 auto;
+  }
+  .order-status { margin: 4px 0 0; font-weight: 800; color: var(--muted); }
+  .tree .big { background: var(--navy); color: #fff; border-radius: 12px; padding: 8px 10px; font-weight: 800; margin-bottom: 8px; }
+  .kid { font-size: .86rem; }
+  .sdlc div { font-size: .78rem; min-height: 72px; border-top: 4px solid var(--orange); }
+  .sdlc .now { background: #fff4e8; }
+  .checklist { display: grid; gap: 5px; }
+  .checklist label {
+    display: flex; gap: 8px; align-items: flex-start; background: #fff; border: 1px solid #efe4d6;
+    border-radius: 10px; padding: 6px 8px; font-weight: 800; font-size: .9rem;
+  }
+  .sliders { display: grid; gap: 2px; font-weight: 800; font-size: .9rem; }
+  .sliders input { width: 100%; accent-color: var(--green); }
+  .cover { height: 100%; display: grid; grid-template-columns: 1.15fr .85fr; gap: 16px; align-items: center; }
+  .hero-title { font-size: clamp(1.7rem, 3.4vw, 2.7rem); line-height: 1.2; margin: 4px 0 8px; }
+  .student { display: flex; gap: 10px; align-items: center; background: var(--navy); color: #fff; border-radius: 16px; padding: 10px 12px; max-width: 520px; }
+  .avatar { width: 50px; height: 50px; border-radius: 14px; display: grid; place-items: center; background: var(--orange); font-weight: 900; font-size: 22px; }
+  .student b { font-size: 1.12rem; } .student span { display: block; color: #ffd7ad; font-weight: 700; }
+  .go { margin-top: 12px; background: var(--orange); color: #fff; border: 0; border-radius: 999px; padding: 10px 18px; font-weight: 900; font-size: 1.05rem; box-shadow: 0 4px 0 var(--orange-d); }
+  .stage-card { background: #f7f8fb; border-radius: 16px; padding: 10px; border: 1px solid #efe4d6; }
+  .end-list { display: grid; gap: 5px; }
+  .end-list button { display: flex; }
+  .sign { margin-top: 8px; border-top: 2px dashed #efd8bf; padding-top: 6px; font-weight: 800; }
+  .links a { color: #1d4e89; font-weight: 800; }
+  .why-duel { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .duel { border-radius: 16px; padding: 10px; border: 1px solid #efe4d6; background: #fff; }
+  .duel.bad { background: #f7f7f8; }
+  .duel.good { background: #f3fff6; border-color: #b7ebc9; }
+  .duel b { display: block; margin-bottom: 6px; }
+  .duel .pitch { height: 110px; }
+  .vanish {
+    min-height: 42px; margin: 8px 0; font-weight: 900; font-size: 1.4rem; color: transparent; text-align: center;
+  }
+  .vanish.show { color: #9f1239; animation: puff .7s ease; }
+  @keyframes puff { 0% { opacity: 0; transform: scale(.8); } 30% { opacity: 1; transform: scale(1.08); } 100% { opacity: 0; } }
+  .uses { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .use {
+    border: 1px solid #efe4d6; background: #fff; border-radius: 14px; padding: 10px 8px;
+    font-weight: 900; text-align: center;
+  }
+  .use.on { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .use small { display: block; font-weight: 700; color: var(--muted); margin-top: 2px; }
+  .use.on small { color: #ffd7ad; }
+  .panels { margin-top: 10px; }
+  .panel { display: none; }
+  .panel.on { display: block; }
+  @media (max-width: 980px) {
+    .cover, .split, .split.even, .scratch-app, .types, .outcomes, .compare, .steps, .kids, .sdlc, .roles, .why-duel, .uses, .names { grid-template-columns: 1fr; }
+    .stack { left: 8px; right: 8px; } .slide { left: 6px; right: 6px; }
+  }
+  @media (max-height: 760px) {
+    h1 { font-size: 1.22rem; } .pitch { height: 108px; } .q { margin-bottom: 3px; padding: 4px 6px; }
+    .hero-title { font-size: 1.7rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo">ن</div><div><b>بيسان طارق البعم</b><span>الصف التاسع · المهارات الرقمية</span></div></div>
+  <div id="crumb">الغلاف</div>
+  <div class="prog">النتاجات <span id="progN">0 / 7</span><i><b id="progBar"></b></i>
+    <button class="icon-btn" id="fs" type="button">ملء الشاشة</button>
+  </div>
+</header>
+<div class="stack" aria-hidden="true"></div>
+<main id="deck">
+
+  <section class="slide active" id="s-cover" data-title="صفحة الغلاف">
+    <div class="wrap cover">
+      <div>
+        <div class="kicker">الدرس الأول · صفحات متتالية</div>
+        <h1 class="hero-title">المتغيرات البرمجية في برمجية سكراتش</h1>
+        <p class="lead">نبدأ بالسبب: لماذا يحتاج البرنامج متغيرًا، وماذا يستطيع أن يفعل به.</p>
+        <div class="student">
+          <div class="avatar">ب</div>
+          <div>
+            <span>إعداد الطالبة</span>
+            <b>بيسان طارق البعم</b>
+            <span>الصف التاسع · بإشراف المعلمة آلاء</span>
+          </div>
+        </div>
+        <button class="go" type="button" data-goto="s-why">لماذا المتغيرات؟</button>
+      </div>
+      <div class="stage-card">
+        <div class="pitch" id="coverPitch"><div class="goalpost"></div><div class="ball"></div></div>
+        <div class="row" style="margin-top:8px;justify-content:space-between">
+          <div class="script">
+            <div class="blk hat"><svg class="flag" viewBox="0 0 24 24"><path d="M6 3v18" stroke="#fff" stroke-width="2"/><path d="M8 4h11l-3.2 4L19 12H8z" fill="#3dae3d"/></svg> عند نقر العلم الأخضر</div>
+            <div class="blk">اجعل <span class="rep">النتيجة</span> مساويًا <span class="slot">0</span></div>
+            <div class="blk">غيّر <span class="rep">النتيجة</span> بمقدار <span class="slot">1</span></div>
+          </div>
+          <div class="monitor"><em>النتيجة</em><strong id="coverScore">0</strong></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-why" data-title="لماذا ندرس المتغيرات؟">
+    <div class="wrap">
+      <div class="kicker">قبل التعريف</div>
+      <h1>البرنامج بلا متغير ينسى. ومع المتغير يتذكر</h1>
+      <p class="lead">اضغط «هدف» في الجهتين. الحركة تحدث في الاثنتين، لكن الذاكرة توجد في جهة واحدة.</p>
+      <div class="why-duel">
+        <div class="duel bad">
+          <b>بلا متغير</b>
+          <div class="pitch" id="pitchForget"><div class="goalpost"></div><div class="ball"></div></div>
+          <div class="vanish" id="forgetFlash">هدف!</div>
+          <button class="ghost" id="forgetBtn" type="button">هدف</button>
+          <p class="note">الكرة تدخل المرمى ثم لا يبقى شيء. لا نتيجة، ولا فائز، ولا جولة تكمل على ما سبق.</p>
+        </div>
+        <div class="duel good">
+          <b>مع متغير اسمه النتيجة</b>
+          <div class="pitch" id="pitchRemember"><div class="goalpost"></div><div class="ball"></div></div>
+          <div class="row" style="justify-content:space-between;margin-top:8px">
+            <div class="script">
+              <div class="blk">غيّر <span class="rep">النتيجة</span> بمقدار <span class="slot">1</span></div>
+            </div>
+            <div class="monitor" id="whyMon"><em>النتيجة</em><strong id="whyScore">0</strong></div>
+          </div>
+          <button class="ghost" id="rememberBtn" type="button">هدف</button>
+          <p class="note">الرقم يبقى بعد انتهاء الحركة. اللعبة تعرف كم هدفًا سُجّل، وتقدر تكمل منه.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-use" data-title="فائدة المتغير في البرنامج">
+    <div class="wrap">
+      <div class="kicker">ماذا نستفيد؟</div>
+      <h1>المتغير يجعل البرنامج يتذكر، ويقرر، ويحسب، ويكلم اللاعب</h1>
+      <div class="uses" id="useTabs">
+        <button class="use on" type="button" data-use="mem">يتذكر<small>قيمة تتغير وتبقى</small></button>
+        <button class="use" type="button" data-use="decide">يقرر<small>يقارن ثم يتصرف</small></button>
+        <button class="use" type="button" data-use="calc">يحسب<small>يحفظ الناتج</small></button>
+        <button class="use" type="button" data-use="talk">يكلم اللاعب<small>رسالة باسمه</small></button>
+      </div>
+      <div class="panels">
+        <div class="panel on card" data-panel="mem">
+          <p>أثناء اللعب تتغير أشياء: الأهداف، العلامة، عدد المحاولات. المتغير يحفظ آخر قيمة، والبرنامج يرجع إليها بالاسم في أي لحظة.</p>
+          <div class="script">
+            <div class="blk">اجعل <span class="rep">المحاولات</span> مساويًا <span class="slot">0</span></div>
+            <div class="blk">غيّر <span class="rep">المحاولات</span> بمقدار <span class="slot">1</span></div>
+          </div>
+        </div>
+        <div class="panel card" data-panel="decide">
+          <p>القرار يحتاج رقمًا محفوظًا. إذا بقيت النتيجة في المتغير، يستطيع البرنامج أن يقول: هل فزنا؟</p>
+          <div class="row">
+            <div class="hex">النتيجة أكبر من 2</div>
+            <div class="blk looks">قل <span class="slot">فزت</span></div>
+          </div>
+        </div>
+        <div class="panel card" data-panel="calc">
+          <p>الحساب يتكرر في البرامج: مساحة، معدل، مجموع. المتغير يمسك الناتج حتى لا نعيد العملية كل مرة من الصفر.</p>
+          <div class="blk op">اجعل <span class="rep">المساحة</span> مساويًا <span class="slot">الطول × العرض</span></div>
+          <p class="tip">المعدل النهائي بالطريقة نفسها: مجموع العلامات ÷ عدد المواد، ثم نضعه في متغير.</p>
+        </div>
+        <div class="panel card" data-panel="talk">
+          <p>النص المحفوظ يجعل الرسالة تخص هذا اللاعب. الاسم متغير، فتحية الشاشة تتبدل من شخص إلى آخر.</p>
+          <div class="blk op">اربط <span class="slot">مرحبًا</span> <span class="slot">اسم اللاعب</span></div>
+          <p class="note">الناتج مثال: مرحبًا بيسان. من غير متغير تبقى الجملة ثابتة لكل الناس.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n1" data-title="النتاج 1 · التعريف">
+    <div class="wrap">
+      <div class="kicker">النتاج الأول · صفحة المفهوم</div>
+      <h1>المتغير مكان في الذاكرة له اسم وقيمة</h1>
+      <div class="split fill">
+        <div class="card">
+          <p>المتغير مساحة تخزينية في ذاكرة البرنامج. الاسم يستدعي القيمة، والقيمة يمكن أن تتبدل أثناء التشغيل.</p>
+          <div class="memory">
+            <div>
+              <strong>الاسم يبقى «النتيجة» والقيمة تتبدل</strong>
+              <div class="en">Name + Value + Data type</div>
+              <div class="mem-btns" style="margin-top:8px">
+                <button type="button" id="memMinus">−1</button>
+                <button type="button" id="memPlus">+1</button>
+                <button type="button" id="memZero">اجعل 0</button>
+              </div>
+            </div>
+            <div class="monitor" id="memMon"><em>النتيجة</em><strong id="memVal">0</strong></div>
+          </div>
+          <p class="tip">نعيد استخدام المتغير في أكثر من مكان، وفي العمليات الحسابية والمنطقية.</p>
+        </div>
+        <div class="grid types">
+          <div class="type int"><b>العدد الصحيح <span class="en">Integer</span></b><span>1 ، 2 ، 3 ، 4 وعدد الأهداف</span></div>
+          <div class="type str"><b>النص <span class="en">String</span></b><span>«مرحبًا علي» واسم المدينة</span></div>
+          <div class="type bool"><b>القيمة المنطقية <span class="en">Boolean</span></b><span>صواب أو خطأ داخل شرط سداسي</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n1x" data-title="تمرين النتاج 1">
+    <div class="wrap">
+      <div class="kicker">النتاج الأول · صفحة التمرين</div>
+      <h1>مثّل البيانات بالنوع المناسب</h1>
+      <div class="quiz fill" data-done="n1">
+        <div class="q" data-ok="mem"><p>ما المتغير؟</p><button type="button" data-v="bg">خلفية ثابتة</button><button type="button" data-v="mem">مكان في الذاكرة له اسم وقيمة متبدلة</button><button type="button" data-v="sp">كائن يتحرك فقط</button><small class="why">الاسم يشير إلى القيمة، والقيمة تُستبدل كلما تغيّر الهدف أو العلامة.</small></div>
+        <div class="q" data-ok="name"><p>ماذا يبقى واضحًا بينما تتبدل القيمة؟</p><button type="button" data-v="name">اسم المتغير</button><button type="button" data-v="color">لون الملعب</button><small class="why">«النتيجة» تبقى، والرقم داخلها هو الذي يزيد.</small></div>
+        <div class="q" data-ok="int"><p>العدد 4 نوعه:</p><button type="button" data-v="str">نص</button><button type="button" data-v="int">عدد صحيح</button><button type="button" data-v="bool">منطقية</button><small class="why">النقاط والأهداف أعداد صحيحة.</small></div>
+        <div class="q" data-ok="str"><p>«مرحبًا علي» نوعه:</p><button type="button" data-v="int">عدد صحيح</button><button type="button" data-v="str">نص</button><button type="button" data-v="bool">منطقية</button><small class="why">الحروف والكلمات نص، ومثلها اسم المجموعة «جرش».</small></div>
+        <div class="q" data-ok="bool"><p>صواب أو خطأ نوعه:</p><button type="button" data-v="bool">قيمة منطقية</button><button type="button" data-v="int">عدد صحيح</button><button type="button" data-v="str">خلفية</button><small class="why">احتمالان فقط: صواب أو خطأ.</small></div>
+        <p class="win" hidden>تحقق النتاج الأول.</p>
+        <button class="retry" type="button" hidden>إعادة التمرين</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n2" data-title="النتاج 2 · النوع والمكان">
+    <div class="wrap">
+      <div class="kicker">النتاج الثاني · صفحة المفهوم</div>
+      <h1>النوع يناسب البيانات، والمكان يناسب من يستخدمها</h1>
+      <div class="grid types" style="margin-bottom:8px">
+        <div class="type int"><b>العدد الصحيح <span class="en">Integer</span></b><span>مثل 1 و 2 و 3 وعدد الأهداف</span></div>
+        <div class="type str"><b>النص <span class="en">String</span></b><span>مثل «مرحبًا علي» واسم المدينة</span></div>
+        <div class="type bool"><b>القيمة المنطقية <span class="en">Boolean</span></b><span>صواب أو خطأ</span></div>
+      </div>
+      <div class="grid compare">
+        <div class="cmp local"><b>محلي · هذا الكائن فقط</b><span class="en">Local · For this sprite only</span><span>مثل ملف على قرص جهازك: يراه الكائن الذي أُنشئ عليه فقط.</span></div>
+        <div class="cmp global"><b>عام · لجميع الكائنات</b><span class="en">Global · For all sprites</span><span>مثل ملف على Google Drive: أي كائن في المشروع يستطيع قراءته وتغييره.</span></div>
+      </div>
+      <div class="grid steps" style="margin-top:8px">
+        <div class="step"><b>1</b> المقاطع البرمجية</div>
+        <div class="step"><b>2</b> فئة المتغيرات</div>
+        <div class="step"><b>3</b> إنشاء متغير</div>
+        <div class="step"><b>4</b> اسم واضح وفريد</div>
+        <div class="step"><b>5</b> اختيار النطاق</div>
+      </div>
+      <p class="tip">نختار العام إذا احتاجت القيمة عدة كائنات، والمحلي إذا كانت تخص كائنًا واحدًا. الاختيار يعتمد على البرنامج لا على قاعدة واحدة.</p>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n2x" data-title="تمرين النتاج 2">
+    <div class="wrap">
+      <div class="kicker">النتاج الثاني · صفحة التمرين</div>
+      <h1>برنامج العلامات، ومكان النتيجة في المباراة</h1>
+      <div class="quiz fill" data-done="n2">
+        <div class="q" data-ok="str"><p>اسم الطالب يُخزَّن كـ</p><button type="button" data-v="str">نص</button><button type="button" data-v="int">عدد صحيح</button><button type="button" data-v="bool">منطقية</button><small class="why">الاسم حروف، فنوعه نص.</small></div>
+        <div class="q" data-ok="int"><p>العلامة 18 تُخزَّن كـ</p><button type="button" data-v="bool">منطقية</button><button type="button" data-v="int">عدد صحيح</button><button type="button" data-v="str">نص</button><small class="why">العلامة عدد نستخدمه في الحساب.</small></div>
+        <div class="q" data-ok="bool"><p>ناجح أو راسب:</p><button type="button" data-v="int">عدد صحيح</button><button type="button" data-v="bool">قيمة منطقية</button><button type="button" data-v="bg">خلفية</button><small class="why">حالتان: صواب أو خطأ.</small></div>
+        <div class="q" data-ok="global"><p>نتيجة تحتاجها الكرة والمرمى واللاعب:</p><button type="button" data-v="local">محلي</button><button type="button" data-v="global">عام لجميع الكائنات</button><small class="why">أكثر من كائن يقرؤها، فنختار «لجميع الكائنات».</small></div>
+        <div class="q" data-ok="local"><p>خطوة تخص اللاعب وحده:</p><button type="button" data-v="local">محلي لهذا الكائن فقط</button><button type="button" data-v="global">عام</button><small class="why">القيمة خاصة بكائن واحد.</small></div>
+        <p class="win" hidden>تحقق النتاج الثاني.</p>
+        <button class="retry" type="button" hidden>إعادة التمرين</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n3" data-title="النتاج 3 · الاسم الواضح">
+    <div class="wrap">
+      <div class="kicker">النتاج الثالث · صفحة المفهوم</div>
+      <h1>الاسم الواضح يجعل البرنامج مقروءًا</h1>
+      <p class="lead">الاسم «س» لا يخبرنا ماذا داخل المربع. هذه أسماء واضحة من درسنا، كل واحد يحفظ شيئًا نعرفه من اسمه.</p>
+      <div class="grid names">
+        <div class="name-ex"><b>الساعة</b><span>الوقت، بدل الحرف س</span></div>
+        <div class="name-ex"><b>النتيجة</b><span>عدد الأهداف في المباراة</span></div>
+        <div class="name-ex"><b>عدد_الأهداف</b><span>رقم، والشرطة _ مسموحة</span></div>
+        <div class="name-ex"><b>اسم_الفريق</b><span>مدينة أردنية، مثل جرش</span></div>
+        <div class="name-ex"><b>اسم_اللاعب</b><span>نص قصير وواضح</span></div>
+        <div class="name-ex"><b>العلامة</b><span>درجة الطالب في المادة</span></div>
+        <div class="name-ex"><b>المساحة</b><span>ناتج الطول × العرض</span></div>
+        <div class="name-ex"><b>عدد_المحاولات</b><span>كم مرة أجاب اللاعب</span></div>
+        <div class="name-ex"><b>عدد_الأولاد</b><span>عدد صحيح يتغير</span></div>
+        <div class="name-ex"><b>ولادة_اليوم</b><span>كم مولودًا أُضيف</span></div>
+        <div class="name-ex"><b>المعدل_النهائي</b><span>ناتج القسمة على المواد</span></div>
+        <div class="name-ex"><b>score</b><span>الاسم نفسه بالإنجليزية واضح أيضًا</span></div>
+      </div>
+      <div class="grid rules" style="margin-top:8px">
+        <div class="rule">اسم فريد لا يتكرر</div>
+        <div class="rule">يدل على الغرض ويرتبط بالمشروع</div>
+        <div class="rule">قصير ويسهل تذكره</div>
+        <div class="rule">نتجنب س و ص والأسماء الافتراضية</div>
+        <div class="rule">أحرف أو أرقام أو الشرطة _</div>
+        <div class="rule">كلمة أو جملة قصيرة، بالعربية أو بالإنجليزية</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n3x" data-title="تمرين النتاج 3">
+    <div class="wrap">
+      <div class="kicker">النتاج الثالث · صفحة التمرين</div>
+      <h1>اختر الاسم الذي يُقرأ</h1>
+      <div class="quiz compact fill" data-done="n3">
+        <div class="q" data-ok="score"><p>أي اسم أوضح لمتغير الأهداف؟</p><button type="button" data-v="s">س</button><button type="button" data-v="score">النتيجة</button><button type="button" data-v="v">ص</button><button type="button" data-v="def">variable</button><small class="why">«النتيجة» تخبرنا أن المربع يحفظ الأهداف.</small></div>
+        <div class="q" data-ok="clock"><p>لمتغير الوقت نختار:</p><button type="button" data-v="s">س</button><button type="button" data-v="clock">الساعة</button><small class="why">الاسم الدال القصير أسهل في التتبع من حرف عام.</small></div>
+        <div class="q" data-ok="ok"><p>اسم فريق مدينة أردنية نضعه في:</p><button type="button" data-v="ok">اسم_الفريق</button><button type="button" data-v="bad">ص</button><small class="why">الاسم يدل على الفريق، ونوع القيمة نص.</small></div>
+        <div class="q" data-ok="area"><p>لحفظ مساحة المستطيل نسمّي المتغير:</p><button type="button" data-v="s">س</button><button type="button" data-v="area">المساحة</button><button type="button" data-v="v">ص</button><small class="why">«المساحة» يربط الاسم بالمشروع، فيُفهم الناتج من غير شرح.</small></div>
+        <div class="q" data-ok="bad"><p>أي الأسماء نتجنبه لأنه افتراضي ولا يدل على المعنى؟</p><button type="button" data-v="tries">عدد_المحاولات</button><button type="button" data-v="bad">س</button><small class="why">س و ص أسماء افتراضية. القارئ لا يعرف ماذا بداخلها.</small></div>
+        <div class="q" data-ok="ok2"><p>هل يجوز اسم مثل عدد_الأهداف ؟</p><button type="button" data-v="ok2">نعم، والشرطة _ مسموحة</button><button type="button" data-v="no">لا، الرموز ممنوعة كلها</button><small class="why">الاسم قد يحوي أحرفًا أو أرقامًا أو الشرطة _.</small></div>
+        <div class="q" data-ok="avg"><p>لمتغير معدل الطالب الأنسب:</p><button type="button" data-v="v">ص</button><button type="button" data-v="avg">المعدل_النهائي</button><small class="why">جملة قصيرة تدل على الغرض أفضل من حرف واحد.</small></div>
+        <div class="q" data-ok="en"><p>أي اسم إنجليزي واضح لعدد النقاط؟</p><button type="button" data-v="sym">***</button><button type="button" data-v="en">score</button><small class="why">الاسم يكون بالعربية أو بالإنجليزية، بشرط أن يدل على المحتوى.</small></div>
+        <div class="q" data-ok="player"><p>اسم اللاعب يُحفظ في متغير اسمه:</p><button type="button" data-v="player">اسم_اللاعب</button><button type="button" data-v="bg">خلفية</button><small class="why">الخلفية مشهد. الاسم نص، فنضعه في متغير واضح.</small></div>
+        <p class="win" hidden>تحقق النتاج الثالث.</p>
+        <button class="retry" type="button" hidden>إعادة التمرين</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n4" data-title="النتاج 4 · اللبنات">
+    <div class="wrap">
+      <div class="kicker">النتاج الرابع · صفحة المفهوم</div>
+      <h1>إظهار، تعيين، وتغيير</h1>
+      <div class="scratch-app fill">
+        <div class="cats">
+          <div class="cat motion">الحركة</div>
+          <div class="cat looks">الهيئة</div>
+          <div class="cat sound">الصوت</div>
+          <div class="cat ctrl">التحكم</div>
+          <div class="cat var">المتغيرات</div>
+        </div>
+        <div>
+          <div class="script" id="scoreScript">
+            <div class="blk hat"><svg class="flag" viewBox="0 0 24 24"><path d="M6 3v18" stroke="#fff" stroke-width="2"/><path d="M8 4h11l-3.2 4L19 12H8z" fill="#3dae3d"/></svg> عند نقر العلم الأخضر</div>
+            <div class="blk" id="blkSet">اجعل <span class="rep">النتيجة</span> مساويًا <span class="slot">0</span></div>
+            <div class="blk" id="blkChange">غيّر <span class="rep">النتيجة</span> بمقدار <span class="slot">1</span></div>
+          </div>
+          <p class="note">اجعل النتيجة = 0 يضع قيمة جديدة. غيّر بمقدار 1 يعني النتيجة = النتيجة + 1. المقدار السالب ينقص.</p>
+        </div>
+        <div class="stage-box">
+          <div class="pitch" id="pitch"><div class="goalpost"></div><div class="ball"></div></div>
+          <div class="row" style="justify-content:space-between">
+            <div class="monitor" id="liveMon"><em>النتيجة</em><strong id="liveScore">0</strong></div>
+            <label class="checkline"><input id="showVar" type="checkbox" checked /> إظهار</label>
+          </div>
+          <div class="row">
+            <button class="ghost" id="goalBtn" type="button">سجّل هدفًا</button>
+            <button class="ghost" id="resetBtn" type="button">ابدأ من 0</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n4x" data-title="تمرين النتاج 4">
+    <div class="wrap">
+      <div class="kicker">النتاج الرابع · صفحة التمرين</div>
+      <h1>ماذا تُخزَّن بعد تنفيذ اللبنات؟</h1>
+      <div class="split fill">
+        <div class="card">
+          <div class="script">
+            <div class="blk hat">عند النقر</div>
+            <div class="blk">اجعل <span class="rep">النتيجة</span> مساويًا <span class="slot">3</span></div>
+            <div class="blk">غيّر <span class="rep">النتيجة</span> بمقدار <span class="slot">1</span></div>
+          </div>
+          <p class="tip">المعادلة الثانية: النتيجة = النتيجة + 1</p>
+        </div>
+        <div class="quiz" data-done="n4">
+          <div class="q" data-ok="4"><p>بعد التنفيذ، القيمة المخزّنة:</p><button type="button" data-v="3">3</button><button type="button" data-v="4">4</button><button type="button" data-v="1">1</button><small class="why">3 + 1 = 4. التعيين أولًا ثم الزيادة.</small></div>
+          <div class="q" data-ok="m5"><p>القيمة 3 ونريد −2. التعديل:</p><button type="button" data-v="p1">غيّر بمقدار 1</button><button type="button" data-v="m5">غيّر بمقدار −5</button><button type="button" data-v="five">اجعلها 5</button><small class="why">3 + (−5) = −2. ويمكن مباشرة: اجعل النتيجة مساويًا −2.</small></div>
+          <p class="win" hidden>تحقق النتاج الرابع.</p>
+          <button class="retry" type="button" hidden>إعادة التمرين</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n5" data-title="النتاج 5 · العمليات">
+    <div class="wrap">
+      <div class="kicker">النتاج الخامس · صفحة المفهوم</div>
+      <h1>نحسب، نقارن، وندمج النص</h1>
+      <div class="split fill">
+        <div class="card">
+          <h2>المساحة = الطول × العرض</h2>
+          <div class="sliders">
+            <label>الطول <output id="lenOut">8</output><input id="len" type="range" min="1" max="12" value="8" /></label>
+            <label>العرض <output id="widOut">5</output><input id="wid" type="range" min="1" max="12" value="5" /></label>
+          </div>
+          <div class="blk op">اجعل <span class="rep">المساحة</span> مساويًا <span class="slot" id="lenSlot">8</span> × <span class="slot" id="widSlot">5</span></div>
+          <div class="row" style="margin-top:8px"><div class="monitor"><em>المساحة</em><strong id="areaVal">40</strong></div></div>
+        </div>
+        <div class="card">
+          <h2>مقارنة ودمج</h2>
+          <div class="hex">المعدل &gt; 50</div>
+          <div class="blk op" style="margin-top:10px">اربط <span class="slot">بيسان</span> <span class="slot">البعم</span></div>
+          <p class="note">لبنة اربط تجمع النصوص: بيسان البعم. لبنة المقارنة سداسية وتُجيب بصواب أو خطأ. المعدل = مجموع العلامات ÷ عدد المواد.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n5x" data-title="تمرين النتاج 5">
+    <div class="wrap">
+      <div class="kicker">النتاج الخامس · صفحة التمرين</div>
+      <h1>نفّذ العملية الصحيحة</h1>
+      <div class="quiz fill" data-done="n5">
+        <div class="q" data-ok="36"><p>الطول 9 والعرض 4. المساحة =</p><button type="button" data-v="13">13</button><button type="button" data-v="36">36</button><button type="button" data-v="94">94</button><small class="why">9 × 4 = 36. يمكن تجريب الأشرطة في الصفحة السابقة.</small></div>
+        <div class="q" data-ok="div"><p>أي عملية تحسب المعدل؟</p><button type="button" data-v="add">المعدل + علامة الرياضيات</button><button type="button" data-v="div">مجموع العلامات ÷ عدد المواد</button><button type="button" data-v="touch">ملامس للمعدل؟</button><small class="why">نقسم المجموع على عدد المواد.</small></div>
+        <div class="q" data-ok="join"><p>اربط «بيسان» و«البعم» ينتج:</p><button type="button" data-v="zero">0</button><button type="button" data-v="join">بيسان البعم</button><button type="button" data-v="bool">صواب</button><small class="why">الدمج للنصوص، والجمع للأعداد، والمقارنة للمنطق.</small></div>
+        <p class="win" hidden>تحقق النتاج الخامس.</p>
+        <button class="retry" type="button" hidden>إعادة التمرين</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n6" data-title="النتاج 6 · التجزئة">
+    <div class="wrap">
+      <div class="kicker">النتاج السادس · Decomposition</div>
+      <h1>نجزّئ لعبة كرة القدم إلى أجزاء صغيرة</h1>
+      <div class="tree fill">
+        <div class="big">المشكلة الكبيرة: تسجيل نقطة كلما دخلت الكرة المرمى</div>
+        <div class="grid kids">
+          <div class="kid">1 · الكائنات والخلفية<span>لاعب، كرة، مرمى، ملعب</span></div>
+          <div class="kid">2 · الحركة والاصطدام<span>الكرة تتحرك، واللمس يعني هدفًا</span></div>
+          <div class="kid">3 · متغير النتيجة<span>يبدأ من 0 ويزيد 1 عند الهدف</span></div>
+        </div>
+        <p class="tip">التجزئة من التفكير الحاسوبي: نفهم كل جزء ونبرمجه، ثم نجمع الحلول. هي تسهّل العمل.</p>
+        <p class="links">مكتبة سكراتش: <a href="https://scratch.mit.edu/projects/editor/?tutorial=all" target="_blank" rel="noopener">scratch.mit.edu</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n6x" data-title="تمرين النتاج 6">
+    <div class="wrap">
+      <div class="kicker">النتاج السادس · صفحة التمرين</div>
+      <h1>رتّب أجزاء بناء اللعبة</h1>
+      <div class="order fill" data-done="n6" data-seq="cast,move,score,join">
+        <div class="order-list">
+          <button type="button" data-id="score"><span><b>تعديل متغير الأهداف</b><small>زيادة 1 عند دخول الكرة الشباك</small></span></button>
+          <button type="button" data-id="cast"><span><b>اختيار الكائنات والخلفية</b><small>اللاعب والكرة والمرمى والملعب</small></span></button>
+          <button type="button" data-id="join"><span><b>تجميع الأجزاء</b><small>برنامج واحد يحل المشكلة الأصلية</small></span></button>
+          <button type="button" data-id="move"><span><b>برمجة الحركة والاصطدام</b><small>تحريك الكرة ومعرفة لحظة الهدف</small></span></button>
+        </div>
+        <p class="order-status"></p>
+        <p class="win" hidden>تحقق النتاج السادس.</p>
+        <button class="retry" type="button" hidden>إعادة التمرين</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n7" data-title="النتاج 7 · الحل المتكامل">
+    <div class="wrap">
+      <div class="kicker">النتاج السابع · SDLC</div>
+      <h1>نجمع المقاطع في برنامج واحد</h1>
+      <div class="grid sdlc">
+        <div>1 التخطيط<span>ما المشكلة؟ ولماذا؟</span></div>
+        <div>2 التحليل<span>الجمهور والسيناريو</span></div>
+        <div class="now">3 التصميم<span>خلفيات وكائنات ومتغيرات</span></div>
+        <div>4 التنفيذ<span>كتابة اللبنات</span></div>
+        <div>5 الاختبار<span>هل تزيد النتيجة؟</span></div>
+        <div>6 النشر<span>مشاركة المشروع</span></div>
+      </div>
+      <div class="script" style="margin-top:10px">
+        <div class="blk hat">عند نقر العلم الأخضر</div>
+        <div class="blk">اجعل <span class="rep">النتيجة</span> مساويًا <span class="slot">0</span></div>
+        <div class="blk ctl">إذا لامست الكرة المرمى</div>
+        <div class="blk">غيّر <span class="rep">النتيجة</span> بمقدار <span class="slot">1</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-n7x" data-title="تمرين النتاج 7">
+    <div class="wrap">
+      <div class="kicker">النتاج السابع · صفحة التمرين</div>
+      <h1>رتّب دورة حياة تطوير البرمجيات</h1>
+      <div class="order fill" data-done="n7" data-seq="plan,analyze,design,build,test,publish">
+        <div class="order-list">
+          <button type="button" data-id="test"><span><b>الاختبار</b><small>نجرّب تسجيل الهدف</small></span></button>
+          <button type="button" data-id="plan"><span><b>التخطيط</b><small>نحدد المشكلة وسبب اختيارها</small></span></button>
+          <button type="button" data-id="publish"><span><b>النشر</b><small>نشارك اللعبة</small></span></button>
+          <button type="button" data-id="design"><span><b>التصميم</b><small>خلفيات وكائنات ومتغيرات</small></span></button>
+          <button type="button" data-id="build"><span><b>التنفيذ</b><small>نكتب اللبنات</small></span></button>
+          <button type="button" data-id="analyze"><span><b>التحليل</b><small>الجمهور والسيناريو</small></span></button>
+        </div>
+        <p class="order-status"></p>
+        <p class="win" hidden>تحقق النتاج السابع.</p>
+        <button class="retry" type="button" hidden>إعادة التمرين</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-check" data-title="تقييم · صح وخطأ">
+    <div class="wrap">
+      <div class="kicker">تقييم المعرفة</div>
+      <h1>ميّز العبارة الصحيحة</h1>
+      <div class="quiz fill" data-done="bonus1">
+        <div class="q" data-ok="t"><p>المتغيرات تخزّن قيمًا يمكن تغييرها أثناء التشغيل.</p><button type="button" data-v="t">صحيحة</button><button type="button" data-v="f">غير صحيحة</button><small class="why">هذا عمل المتغير.</small></div>
+        <div class="q" data-ok="f"><p>تعريف المتغير في أي مكان لا يؤثر في عمل البرنامج.</p><button type="button" data-v="t">صحيحة</button><button type="button" data-v="f">غير صحيحة</button><small class="why">النطاق يغيّر من يستطيع استخدام المتغير.</small></div>
+        <div class="q" data-ok="t"><p>يمكن حفظ ناتج عملية حسابية في متغير.</p><button type="button" data-v="t">صحيحة</button><button type="button" data-v="f">غير صحيحة</button><small class="why">مثل حفظ المساحة.</small></div>
+        <div class="q" data-ok="f"><p>تجزئة المشكلة تجعل الحل أكثر تعقيدًا.</p><button type="button" data-v="t">صحيحة</button><button type="button" data-v="f">غير صحيحة</button><small class="why">التجزئة تسهّل الفهم والبرمجة.</small></div>
+        <div class="q" data-ok="t"><p>نبرمج الأجزاء منفصلة ثم ندمجها.</p><button type="button" data-v="t">صحيحة</button><button type="button" data-v="f">غير صحيحة</button><small class="why">هكذا يكتمل البرنامج.</small></div>
+        <div class="q" data-ok="t"><p>المتغيرات ترتبط بالكائنات ولا ترتبط بالخلفيات.</p><button type="button" data-v="t">صحيحة</button><button type="button" data-v="f">غير صحيحة</button><small class="why">نختار هذا الكائن فقط أو جميع الكائنات. الخلفية مشهد للعرض.</small></div>
+        <p class="win" hidden>اكتمل حكم العبارات.</p>
+        <button class="retry" type="button" hidden>إعادة التمرين</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-family" data-title="تقييم · تحليل برنامج">
+    <div class="wrap">
+      <div class="kicker">تقييم المهارة</div>
+      <h1>اقرأ اللبنات ثم أجب</h1>
+      <div class="split fill">
+        <div>
+          <div class="script">
+            <div class="blk hat">عند النقر</div>
+            <div class="blk ctl">كرر حتى <span class="hex">مفتاح المسافة مضغوط؟</span></div>
+            <div class="blk">اجعل <span class="rep">عدد الأولاد</span> مساويًا <span class="slot">2</span></div>
+            <div class="blk">غيّر <span class="rep">عدد الأولاد</span> بمقدار <span class="rep">ولادة اليوم</span></div>
+            <div class="blk">غيّر <span class="rep">عدد أفراد الأسرة</span> بمقدار <span class="slot">الأسرة + الولادة</span></div>
+            <div class="blk looks">قل <span class="slot">انتهى الدوام وداعًا</span></div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button class="ghost" id="runFamily" type="button">نفّذ مرة · توأم</button>
+            <div class="monitor"><em>عدد الأولاد</em><strong id="kidsVal">0</strong></div>
+            <div class="monitor"><em>الأسرة</em><strong id="famVal">4</strong></div>
+          </div>
+        </div>
+        <div class="quiz" data-done="bonus2">
+          <div class="q" data-ok="3"><p>كم متغيرًا في البرنامج؟</p><button type="button" data-v="2">2</button><button type="button" data-v="3">3</button><button type="button" data-v="1">1</button><small class="why">عدد الأولاد، ولادة اليوم، عدد أفراد الأسرة.</small></div>
+          <div class="q" data-ok="4"><p>تنفيذ واحد والتوأم: عدد الأولاد =</p><button type="button" data-v="2">2</button><button type="button" data-v="4">4</button><button type="button" data-v="6">6</button><small class="why">اجعل 2 ثم زِد 2 فيصبح 4. «اجعل» لا يراكم الأولاد في كل لفة.</small></div>
+          <p class="win" hidden>تم تحليل أثر اجعل وغيّر.</p>
+          <button class="retry" type="button" hidden>إعادة التمرين</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-project" data-title="المشروع والمواطنة">
+    <div class="wrap">
+      <div class="kicker">منتجات التعلم · المهمة 1</div>
+      <h1>لعبة تعليمية تفاعلية</h1>
+      <div class="split fill">
+        <div class="card">
+          <h2>عرض Google Slides</h2>
+          <div class="checklist">
+            <label><input type="checkbox" /> المشكلة وسبب اختيارها</label>
+            <label><input type="checkbox" /> الفكرة والهدف والجمهور</label>
+            <label><input type="checkbox" /> السيناريو: أحداث وشخصيات ومراحل</label>
+            <label><input type="checkbox" /> مخطط زمني وتوزيع الأدوار</label>
+          </div>
+          <div class="grid roles" style="margin-top:6px">
+            <div class="role"><b>منسق</b><span>يجمع العمل</span></div>
+            <div class="role"><b>سيناريو</b><span>يكتب المراحل</span></div>
+            <div class="role"><b>مصمم</b><span>خلفيات وكائنات</span></div>
+            <div class="role"><b>مبرمج</b><span>متغيرات ولبنات</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>التصميم في سكراتش</h2>
+          <div class="checklist">
+            <label><input type="checkbox" /> مشروع جديد وخلفيات مناسبة</label>
+            <label><input type="checkbox" /> كائنات اللاعب وعناصر اللعبة</label>
+            <label><input type="checkbox" /> متغير للنقاط ومتغير للأحداث</label>
+            <label><input type="checkbox" /> لبنات اجعل وغيّر في مكانها</label>
+          </div>
+          <p class="tip">مثال الدرس: مجموعات بأسماء مدن أردنية، سؤال واحد صحيح، والنقاط عدد صحيح يزيد 1.</p>
+          <p class="note">مواطنة رقمية: التعليق على مشاريع الآخرين بنّاء ومحترم، والخطأ فرصة لنتعلم مهارة جديدة.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" id="s-end" data-title="الخاتمة">
+    <div class="wrap">
+      <div class="kicker">أنا أستطيع</div>
+      <h1>الاسم يبقى، والقيمة تتغير، والبرنامج يُقرأ</h1>
+      <div class="end-list fill" id="endList">
+        <button type="button" data-goto="s-n1" data-outcome="n1">1 · أُعرّف المتغير وأمثّل به البيانات</button>
+        <button type="button" data-goto="s-n2" data-outcome="n2">2 · أختار النوع والمكان</button>
+        <button type="button" data-goto="s-n3" data-outcome="n3">3 · أُسمّي المتغير اسمًا واضحًا</button>
+        <button type="button" data-goto="s-n4" data-outcome="n4">4 · أُظهر المتغير وأعيّن قيمته وأغيّرها</button>
+        <button type="button" data-goto="s-n5" data-outcome="n5">5 · أحسب وأقارن وأدمج النصوص</button>
+        <button type="button" data-goto="s-n6" data-outcome="n6">6 · أُجزّئ المشكلة وأبرمج أجزاءها</button>
+        <button type="button" data-goto="s-n7" data-outcome="n7">7 · أجمع حلًا متكاملًا</button>
+      </div>
+      <div class="sign">إعداد الطالبة: بيسان طارق البعم · الصف التاسع · المهارات الرقمية · المتغيرات البرمجية في سكراتش</div>
+    </div>
+  </section>
+</main>
+<footer>
+  <button class="nav-btn" id="prev" type="button">السابق</button>
+  <div class="foot-center">
+    <div id="count">صفحة 1 من 20</div>
+    <div class="copy">جميع الحقوق محفوظة © بيسان طارق البعم</div>
+  </div>
+  <button class="nav-btn" id="next" type="button">التالي</button>
+</footer>
+<div id="live" class="sr" aria-live="polite"></div>
+<script>
+(function () {
+  const KEY = "baysan-scratch-pages-v3";
+  const OUTCOMES = ["n1", "n2", "n3", "n4", "n5", "n6", "n7"];
+  const slides = [...document.querySelectorAll(".slide")];
+  let saved = { done: {}, slide: 0 };
+  try {
+    const raw = JSON.parse(sessionStorage.getItem(KEY) || "{}");
+    if (raw && typeof raw === "object") saved = { done: raw.done || {}, slide: raw.slide || 0 };
+  } catch (e) {}
+  const done = saved.done;
+  let index = Math.min(Math.max(saved.slide || 0, 0), slides.length - 1);
+
+  function persist() { sessionStorage.setItem(KEY, JSON.stringify({ done: done, slide: index })); }
+  function updateProgress() {
+    const n = OUTCOMES.filter((id) => done[id]).length;
+    document.getElementById("progN").textContent = n + " / 7";
+    document.getElementById("progBar").style.width = (n / 7 * 100) + "%";
+    document.querySelectorAll("[data-outcome]").forEach((el) => el.classList.toggle("done", !!done[el.dataset.outcome]));
+  }
+  function show(n) {
+    index = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach((s, i) => {
+      const on = i === index;
+      s.classList.toggle("active", on);
+      s.setAttribute("aria-hidden", on ? "false" : "true");
+      if (on) s.removeAttribute("inert"); else s.setAttribute("inert", "");
+    });
+    document.getElementById("crumb").textContent = slides[index].dataset.title || "";
+    document.getElementById("count").textContent = "صفحة " + (index + 1) + " من " + slides.length;
+    document.getElementById("prev").disabled = index === 0;
+    document.getElementById("next").disabled = index === slides.length - 1;
+    persist();
+  }
+  function showId(id) {
+    const i = slides.findIndex((s) => s.id === id);
+    if (i >= 0) show(i);
+  }
+  function say(text) {
+    const live = document.getElementById("live");
+    live.textContent = "";
+    setTimeout(() => { live.textContent = text; }, 30);
+  }
+  function mark(id, root, first) {
+    done[id] = true;
+    const win = root.querySelector(".win");
+    if (win) win.hidden = false;
+    const retry = root.querySelector(".retry");
+    if (retry) retry.hidden = false;
+    updateProgress();
+    persist();
+    if (first && win) say(win.textContent.trim());
+  }
+
+  document.querySelectorAll(".quiz").forEach((quiz) => {
+    const questions = [...quiz.querySelectorAll(":scope > .q, .q")].filter((q, i, arr) => arr.indexOf(q) === i);
+    const mine = [...quiz.children].filter((el) => el.classList.contains("q"));
+    const qs = mine.length ? mine : [...quiz.querySelectorAll(".q")];
+    function clearQuiz() {
+      delete done[quiz.dataset.done];
+      const win = quiz.querySelector(".win");
+      if (win) win.hidden = true;
+      const retry = quiz.querySelector(".retry");
+      if (retry) retry.hidden = true;
+      qs.forEach((q) => {
+        q.classList.remove("good", "bad");
+        q.querySelectorAll("button[data-v]").forEach((b) => { b.disabled = false; b.classList.remove("picked", "wrong"); });
+      });
+      updateProgress(); persist();
+    }
+    qs.forEach((q) => {
+      q.querySelectorAll("button[data-v]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          if (q.classList.contains("good")) return;
+          if (btn.dataset.v !== q.dataset.ok) {
+            btn.classList.add("wrong"); q.classList.add("bad"); say("أعد المحاولة");
+            setTimeout(() => { btn.classList.remove("wrong"); q.classList.remove("bad"); }, 600);
+            return;
+          }
+          q.classList.add("good"); btn.classList.add("picked");
+          q.querySelectorAll("button[data-v]").forEach((b) => { b.disabled = true; });
+          if (qs.every((item) => item.classList.contains("good"))) mark(quiz.dataset.done, quiz, true);
+        });
+      });
+    });
+    const retry = quiz.querySelector(".retry");
+    if (retry) retry.addEventListener("click", clearQuiz);
+    if (done[quiz.dataset.done]) {
+      qs.forEach((q) => {
+        q.classList.add("good");
+        const btn = [...q.querySelectorAll("button[data-v]")].find((b) => b.dataset.v === q.dataset.ok);
+        if (btn) btn.classList.add("picked");
+        q.querySelectorAll("button[data-v]").forEach((b) => { b.disabled = true; });
+      });
+      mark(quiz.dataset.done, quiz, false);
+    }
+  });
+
+  document.querySelectorAll(".order").forEach((box) => {
+    const seq = box.dataset.seq.split(",");
+    const list = box.querySelector(".order-list");
+    const status = box.querySelector(".order-status");
+    let picked = [];
+    const buttons = () => [...list.querySelectorAll("button[data-id]")];
+    function shuffle() {
+      const arr = buttons();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      arr.forEach((n) => list.appendChild(n));
+    }
+    function resetPick() {
+      picked = [];
+      buttons().forEach((b) => { b.disabled = false; b.classList.remove("picked", "wrong"); delete b.dataset.n; });
+      if (status) status.textContent = "انقر الخطوات بالترتيب الصحيح.";
+    }
+    list.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-id]");
+      if (!btn || btn.disabled || done[box.dataset.done]) return;
+      if (btn.dataset.id !== seq[picked.length]) {
+        btn.classList.add("wrong"); box.classList.add("bad");
+        say("هذا ليس موقع الخطوة. نبدأ الترتيب من جديد.");
+        setTimeout(() => { box.classList.remove("bad"); resetPick(); }, 450);
+        return;
+      }
+      picked.push(btn.dataset.id);
+      btn.dataset.n = String(picked.length);
+      btn.classList.add("picked"); btn.disabled = true;
+      if (status) status.textContent = "الترتيب: " + picked.length + " / " + seq.length;
+      if (picked.length === seq.length) mark(box.dataset.done, box, true);
+    });
+    const retry = box.querySelector(".retry");
+    if (retry) retry.addEventListener("click", () => {
+      delete done[box.dataset.done];
+      const win = box.querySelector(".win"); if (win) win.hidden = true;
+      retry.hidden = true; shuffle(); resetPick(); updateProgress(); persist();
+    });
+    if (done[box.dataset.done]) {
+      seq.forEach((id, i) => {
+        const b = list.querySelector('button[data-id="' + id + '"]');
+        if (!b) return;
+        list.appendChild(b); b.dataset.n = String(i + 1); b.classList.add("picked"); b.disabled = true;
+      });
+      if (status) status.textContent = "الترتيب مكتمل.";
+      mark(box.dataset.done, box, false);
+    } else { shuffle(); resetPick(); }
+  });
+
+  let mem = 0;
+  const memVal = document.getElementById("memVal");
+  const memMon = document.getElementById("memMon");
+  function setMem(v) { mem = v; memVal.textContent = String(mem); memMon.classList.remove("pop"); void memMon.offsetWidth; memMon.classList.add("pop"); }
+  document.getElementById("memPlus").onclick = () => setMem(mem + 1);
+  document.getElementById("memMinus").onclick = () => setMem(mem - 1);
+  document.getElementById("memZero").onclick = () => setMem(0);
+
+  let score = 0;
+  const liveScore = document.getElementById("liveScore");
+  const liveMon = document.getElementById("liveMon");
+  const pitch = document.getElementById("pitch");
+  function paintScore() { liveScore.textContent = String(score); liveMon.classList.remove("pop"); void liveMon.offsetWidth; liveMon.classList.add("pop"); }
+  function flash(id) { const el = document.getElementById(id); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+  document.getElementById("goalBtn").onclick = () => { score += 1; paintScore(); flash("blkChange"); pitch.classList.add("scored"); setTimeout(() => pitch.classList.remove("scored"), 700); };
+  document.getElementById("resetBtn").onclick = () => { score = 0; paintScore(); flash("blkSet"); pitch.classList.remove("scored"); };
+  document.getElementById("showVar").onchange = (e) => { liveMon.hidden = !e.target.checked; };
+
+  const len = document.getElementById("len");
+  const wid = document.getElementById("wid");
+  function paintArea() {
+    const a = Number(len.value), b = Number(wid.value);
+    document.getElementById("lenOut").textContent = a;
+    document.getElementById("widOut").textContent = b;
+    document.getElementById("lenSlot").textContent = a;
+    document.getElementById("widSlot").textContent = b;
+    document.getElementById("areaVal").textContent = a * b;
+  }
+  len.oninput = paintArea; wid.oninput = paintArea;
+
+  let whyScore = 0;
+  const whyScoreEl = document.getElementById("whyScore");
+  const whyMon = document.getElementById("whyMon");
+  document.getElementById("forgetBtn").onclick = () => {
+    const flash = document.getElementById("forgetFlash");
+    const pitch = document.getElementById("pitchForget");
+    flash.classList.remove("show");
+    void flash.offsetWidth;
+    flash.classList.add("show");
+    pitch.classList.add("scored");
+    setTimeout(() => pitch.classList.remove("scored"), 650);
+  };
+  document.getElementById("rememberBtn").onclick = () => {
+    whyScore += 1;
+    whyScoreEl.textContent = String(whyScore);
+    whyMon.classList.remove("pop");
+    void whyMon.offsetWidth;
+    whyMon.classList.add("pop");
+    const pitch = document.getElementById("pitchRemember");
+    pitch.classList.add("scored");
+    setTimeout(() => pitch.classList.remove("scored"), 650);
+  };
+  document.getElementById("useTabs").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-use]");
+    if (!btn) return;
+    document.querySelectorAll("#useTabs .use").forEach((b) => b.classList.toggle("on", b === btn));
+    document.querySelectorAll("[data-panel]").forEach((p) => p.classList.toggle("on", p.dataset.panel === btn.dataset.use));
+  });
+
+  document.getElementById("runFamily").onclick = () => {
+    const birth = 2, kids = 2 + birth;
+    let family = 4; family = family + (family + birth);
+    document.getElementById("kidsVal").textContent = kids;
+    document.getElementById("famVal").textContent = family;
+    say("عدد الأولاد أصبح 4. الأسرة أصبحت " + family + " لأن الزيادة كانت قيمتها الحالية مضافًا إليها 2.");
+  };
+
+  document.getElementById("prev").onclick = () => show(index - 1);
+  document.getElementById("next").onclick = () => show(index + 1);
+  document.getElementById("fs").onclick = () => {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  };
+  document.addEventListener("click", (e) => {
+    const go = e.target.closest("[data-goto]");
+    if (go) showId(go.dataset.goto);
+  });
+  document.addEventListener("keydown", (e) => {
+    const tag = document.activeElement && document.activeElement.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA") return;
+    if (["ArrowLeft", "ArrowDown", "PageDown"].includes(e.key)) { e.preventDefault(); show(index + 1); }
+    else if (["ArrowRight", "ArrowUp", "PageUp"].includes(e.key)) { e.preventDefault(); show(index - 1); }
+    else if (e.key === "Home") show(0);
+    else if (e.key === "End") show(slides.length - 1);
+  });
+
+  let demo = 0;
+  setInterval(() => {
+    if (document.hidden) return;
+    demo = (demo + 1) % 4;
+    const el = document.getElementById("coverScore");
+    const box = document.getElementById("coverPitch");
+    if (el) el.textContent = String(demo);
+    if (box) box.classList.toggle("scored", demo !== 0);
+  }, 1300);
+
+  updateProgress();
+  show(index);
+})();
+</script>
+</body>
+</html>
